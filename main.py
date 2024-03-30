@@ -28,6 +28,38 @@ from logger import Logger
 from resolver import DocumetResolver, MediaPlayResolver, QuestionResolver
 from utils import __version__, ck2dict, sessions_load
 
+import os
+import datetime
+import threading
+
+def shutdown_timer():
+    # 提示用户输入
+    shutdown_time = input("是否进行定时关机(直接输入时间/n): ")
+
+    # 如果用户输入了'n'，直接返回
+    if shutdown_time.lower() == 'n':
+        return
+
+    # 获取当前时间
+    current_time = datetime.datetime.now().strftime("%H:%M")
+
+    # 计算距离设定关机时间的时间差
+    shutdown_datetime = datetime.datetime.strptime(shutdown_time, "%H:%M")
+    current_datetime = datetime.datetime.strptime(current_time, "%H:%M")
+
+    time_diff = shutdown_datetime - current_datetime
+
+    # 创建并启动新的线程，等待时间差后执行关机命令
+    shutdown_thread = threading.Thread(target=lambda: (time.sleep(time_diff.seconds), os.system("shutdown /s /t 1")))
+    shutdown_thread.start()
+
+# 创建并启动新的线程
+input_thread = threading.Thread(target=shutdown_timer)
+input_thread.start()
+
+# 让主线程等待新线程完成
+input_thread.join()
+
 api = ChaoXingAPI()
 console = Console(height=config.TUI_MAX_HEIGHT)
 logger = Logger("Main")
